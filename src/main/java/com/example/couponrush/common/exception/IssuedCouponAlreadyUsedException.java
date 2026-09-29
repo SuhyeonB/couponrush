@@ -1,7 +1,9 @@
 package com.example.couponrush.common.exception;
 
+import org.springframework.http.HttpStatus;
+
 public class IssuedCouponAlreadyUsedException extends CouponRushException {
     public IssuedCouponAlreadyUsedException(Long issuedCouponId) {
-        super("이미 사용된 쿠폰입니다. issuedCouponId=" + issuedCouponId);
+        super("이미 사용된 쿠폰입니다. issuedCouponId=" + issuedCouponId, HttpStatus.CONFLICT);
     }
 }
