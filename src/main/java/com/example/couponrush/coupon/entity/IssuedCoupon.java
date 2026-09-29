@@ -1,7 +1,7 @@
 package com.example.couponrush.coupon.entity;
 
-import com.example.couponrush.common.exception.IssuedCouponAlreadyUsedException;
-import com.example.couponrush.common.exception.IssuedCouponNotUsablePeriodException;
+import com.example.couponrush.coupon.exception.IssuedCouponAlreadyUsedException;
+import com.example.couponrush.coupon.exception.IssuedCouponNotUsablePeriodException;
 import com.example.couponrush.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Builder;

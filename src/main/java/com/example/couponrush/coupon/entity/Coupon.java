@@ -1,7 +1,7 @@
 package com.example.couponrush.coupon.entity;
 
-import com.example.couponrush.common.exception.CouponNotIssuablePeriodException;
-import com.example.couponrush.common.exception.CouponSoldOutException;
+import com.example.couponrush.coupon.exception.CouponNotIssuablePeriodException;
+import com.example.couponrush.coupon.exception.CouponSoldOutException;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -41,6 +41,9 @@ public class Coupon {
     @Builder
     public Coupon(String name, String description, int quantity,
                   LocalDateTime startAt, LocalDateTime endAt) {
+        if (startAt.isAfter(endAt)) {
+            throw new IllegalArgumentException("시작일은 종료일보다 앞서야 합니다.");
+        }
         this.name = name;
         this.description = description;
         this.quantity = quantity;

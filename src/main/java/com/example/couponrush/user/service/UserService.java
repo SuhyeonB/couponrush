@@ -1,6 +1,6 @@
 package com.example.couponrush.user.service;
 
-import com.example.couponrush.common.exception.UserNotFoundException;
+import com.example.couponrush.user.exception.UserNotFoundException;
 import com.example.couponrush.user.dto.request.UserRequest;
 import com.example.couponrush.user.dto.response.UserResponse;
 import com.example.couponrush.user.entity.User;
@@ -18,7 +18,7 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Transactional
-    public UserResponse createUser (UserRequest dto) {
+    public UserResponse createUser(UserRequest dto) {
         User user = User.builder()
                 .name(dto.getName())
                 .build();
@@ -29,7 +29,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponse> getAllUsers () {
+    public List<UserResponse> getAllUsers() {
         return userRepository.findAll()
                 .stream().map(UserResponse::from).toList();
     }
@@ -38,6 +38,12 @@ public class UserService {
     public UserResponse getUser(Long id) {
         return userRepository.findById(id)
                 .map(UserResponse::from)
+                .orElseThrow(() -> new UserNotFoundException(id));
+    }
+
+    @Transactional(readOnly = true)
+    public User findUser(Long id) {
+        return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
 }

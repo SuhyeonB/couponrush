@@ -1,5 +1,6 @@
-package com.example.couponrush.common.exception;
+package com.example.couponrush.coupon.exception;
 
+import com.example.couponrush.common.exception.CouponRushException;
 import org.springframework.http.HttpStatus;
 
 public class CouponSoldOutException extends CouponRushException {
