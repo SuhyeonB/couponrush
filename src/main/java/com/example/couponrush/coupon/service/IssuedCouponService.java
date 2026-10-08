@@ -4,10 +4,9 @@ import com.example.couponrush.common.exception.LockAcquisitionException;
 import com.example.couponrush.coupon.dto.request.IssuedCouponRequest;
 import com.example.couponrush.coupon.dto.response.IssuedCouponResponse;
 import com.example.couponrush.coupon.exception.IssuedCouponNotFoundException;
-import com.example.couponrush.coupon.repository.CouponRepository;
 import com.example.couponrush.coupon.repository.IssuedCouponRepository;
-import com.example.couponrush.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
@@ -16,39 +15,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class IssuedCouponService {
 
     private final IssuedCouponRepository issuedCouponRepository;
-    private final CouponRepository couponRepository;
-    private final UserService userService;
-    // private final CouponService couponService;
     private final IssuedCouponExecutor issuedCouponExecutor;
     private final RedissonClient redissonClient;
-
-    /*
-    @Transactional
-    public IssuedCouponResponse issue(Long couponId, IssuedCouponRequest dto) {
-        User user = userService.findUser(dto.getUserId());
-
-        // Coupon coupon = couponService.findCoupon(couponId); // without Lock version
-        Coupon coupon = couponRepository.findByIdForUpdate(couponId)
-                        .orElseThrow(() -> new CouponNotFoundException(couponId));
-
-        coupon.issue();
-
-        IssuedCoupon issuedCoupon = IssuedCoupon.builder()
-                .coupon(coupon)
-                .user(user)
-                .startAt(coupon.getStartAt())
-                .endAt(coupon.getEndAt())
-                .build();
-
-        issuedCouponRepository.save(issuedCoupon);
-        return IssuedCouponResponse.from(issuedCoupon);
-    }
-     */
 
     public IssuedCouponResponse issue(Long couponId, IssuedCouponRequest dto) {
         String lockKey = "lock:coupon:" + couponId;
@@ -57,7 +31,8 @@ public class IssuedCouponService {
         boolean acquired = false;
 
         try {
-            acquired = lock.tryLock(3, 10, TimeUnit.SECONDS);
+            acquired = lock.tryLock(3, 10, TimeUnit.SECONDS);   // tryLock(waitTime, leaseTime, Timeunit unit)
+            // acquired = lock.tryLock(40, TimeUnit.SECONDS);   // tryLock(waitTime, unit) : leaseTime 명시 X -> watchdog
             if (!acquired) {
                 throw new LockAcquisitionException(lockKey);
             }
@@ -68,6 +43,8 @@ public class IssuedCouponService {
         } finally {
             if (acquired && lock.isHeldByCurrentThread()) {
                 lock.unlock();
+            } else if (acquired && !lock.isHeldByCurrentThread()) {
+                log.warn("user {} 락 만료 후 종료", dto.getUserId());
             }
         }
     }
